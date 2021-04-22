@@ -10,6 +10,8 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using DockerImageDiff;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace DockerImageDiff
 {
@@ -20,7 +22,9 @@ namespace DockerImageDiff
             InitializeComponent();
         }
 
+        private MyDirectory DockerImage = new MyDirectory("DockerImage");
         private List<MyDirectory> Layers = new List<MyDirectory>();
+        private string FolderPath;
 
         private void selectImage1Button_Click(object sender, EventArgs e)
         {
@@ -29,10 +33,16 @@ namespace DockerImageDiff
             fileDialog.Filter = "TAR (*.tar)|*.tar;|All files (*.*)|*.*";
             fileDialog.ShowDialog();
             fileImage1TextBox.Text = fileDialog.SafeFileName;
+            FolderPath = Path.Combine(Path.GetDirectoryName(fileDialog.FileName),  Path.GetFileNameWithoutExtension(fileDialog.FileName));
+
 
             ExtractFiles.ExtractFile(fileDialog.FileName);
 
             DirSearch(Path.Combine(Directory.GetParent(Path.GetFullPath(fileDialog.FileName)).FullName,Path.GetFileNameWithoutExtension(fileDialog.SafeFileName)));
+
+            Layers = Layers.OrderBy(s => s.Position).ToList();
+
+            DockerImage = Layers.First();
 
             foreach (var item in Layers.ToArray())
             {
@@ -40,11 +50,39 @@ namespace DockerImageDiff
             }
         }
 
+
         private void DirSearch(string path)
         {
+            Dictionary<int, string> Positions = new Dictionary<int, string>();
+
+            foreach (var tempFile in Directory.GetFiles(path))
+            {
+                using (FileStream stream = File.OpenRead(tempFile))
+                {
+                    if (Path.GetFileNameWithoutExtension(tempFile) == "manifest")
+                    {
+                        using (JsonTextReader reader = new JsonTextReader(File.OpenText(tempFile)))
+                        {
+                            JArray o2 = (JArray)JToken.ReadFrom(reader);
+                            int i = 0;
+                            foreach (var value in o2.First.Last.Values())
+                            {
+                                int index = value.ToString().IndexOf('/');
+                                Positions.Add(i++, value.ToString().Substring(0,index));
+                            }
+                        }
+                    }
+
+                }
+            }
+
             foreach (var dir in Directory.GetDirectories(path))
             {
                 MyDirectory layer = new MyDirectory(Path.GetFileName(dir));
+                if (Positions.ContainsValue(layer.DirectoryName))
+                {
+                    layer.Position = Positions.FirstOrDefault(s => s.Value == layer.DirectoryName).Key;
+                }
                 layer.Dive(dir);
                 Layers.Add(layer);
             }
@@ -53,6 +91,32 @@ namespace DockerImageDiff
         private void layerList_SelectedIndexChanged(object sender, EventArgs e)
         {
 
+        }
+
+        public static TreeNode CreateDirectoryNode(DirectoryInfo dirInfo)
+        {
+            TreeNode directoryNode = new TreeNode(dirInfo.Name);
+
+            foreach (var dir in dirInfo.GetDirectories())
+            {
+                directoryNode.Nodes.Add(CreateDirectoryNode(dir));
+            }
+            
+            foreach (var file in dirInfo.GetFiles())
+            {
+                directoryNode.Nodes.Add(new TreeNode(file.Name));
+            }
+
+            return directoryNode;
+        }
+
+        private void loadButton_Click(object sender, EventArgs e)
+        {
+            differenceTreeView.Nodes.Clear();
+
+            var rootDirInfo = new DirectoryInfo(Path.Combine(FolderPath, Layers.First(s=>s.Position == 0).DirectoryName));
+
+            differenceTreeView.Nodes.Add(CreateDirectoryNode(rootDirInfo));
         }
     }
 }

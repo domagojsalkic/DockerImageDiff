@@ -9,6 +9,10 @@ namespace DockerImageDiff
 {
     public class MyFile
     {
+        public MyFile()
+        {
+
+        }
         public MyFile(string fileName, string sha)
         {
             FileName = fileName;
