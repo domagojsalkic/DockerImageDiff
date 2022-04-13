@@ -1,24 +1,44 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Security.Cryptography;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Security.Cryptography;
 
 namespace DockerImageDiff
 {
     public class MyFile
     {
-        public MyFile()
+        public MyFile(string name)
         {
+            Name = name;
+        }  
+        public MyFile(MyFile file)
+        {
+            Name = file.Name;
+            Modified= file.Modified;
+            Deleted = file.Deleted;
+            Added = file.Added;
+            AbsPath = file.AbsPath;
+        }
 
-        }
-        public MyFile(string fileName, string sha)
+        public override bool Equals(object obj)
         {
-            FileName = fileName;
-            Sha256 = sha;
+            if (!(obj is MyFile objAsMyDirectory))
+                return false;
+
+            return Equals(objAsMyDirectory);
         }
-        public string FileName { get; set; }
-        public string Sha256 { get; set; }
+
+        public override int GetHashCode()
+        {
+            return (Name != null ? Name.GetHashCode() : 0);
+        }
+
+        public bool Equals(MyFile myFile)
+        {
+            return myFile.Name == Name;
+        }
+
+        public string Name { get; set; }
+        public bool Modified { get; set; }
+        public bool Deleted { get; set; }
+        public bool Added { get; set; }
+        public string AbsPath { get; set; }
     }
 }
