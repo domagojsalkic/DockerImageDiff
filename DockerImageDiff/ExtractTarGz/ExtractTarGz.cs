@@ -8,6 +8,7 @@ namespace DockerImageDiff.ExtractTarGz
 
     public class Tar
     {
+        private static string _outputDirDelete;
         /// <summary>
         /// Extracts a <i>.tar.gz</i> archive to the specified directory.
         /// </summary>
@@ -57,8 +58,21 @@ namespace DockerImageDiff.ExtractTarGz
             if (!Directory.Exists(Path.GetDirectoryName(output)))
                 Directory.CreateDirectory((Path.GetDirectoryName(output)));
             outputDir = output;
+            if(_outputDirDelete == null)
+                _outputDirDelete = outputDir;
             using (var stream = File.OpenRead(filename))
                 ExtractTar(stream, outputDir);
+        }
+
+
+        public static string ToSafeFileName(string s)
+        {
+            return s
+                .Replace("\\", "")
+                .Replace("/", "\\")
+                .Replace("\"", "")
+                .Replace("*", "")
+                .Replace(":", "");
         }
 
         /// <summary>
@@ -82,9 +96,11 @@ namespace DockerImageDiff.ExtractTarGz
 
                 stream.Seek(376L, SeekOrigin.Current);
 
-                var output = Path.Combine(outputDir, name);
+                var output = Path.Combine(outputDir, ToSafeFileName(name));
                 if (!Directory.Exists(Path.GetDirectoryName(output)))
                     Directory.CreateDirectory(Path.GetDirectoryName(output));
+                if(_outputDirDelete == null)
+                    _outputDirDelete = outputDir;
                 if (!name.EndsWith("/"))
                 {
                     using (var str = File.Open(output, FileMode.OpenOrCreate, FileAccess.Write))
@@ -109,6 +125,14 @@ namespace DockerImageDiff.ExtractTarGz
                     offset = 0;
 
                 stream.Seek(offset, SeekOrigin.Current);
+            }
+        }
+
+        public static void RemoveExtractedData()
+        {
+            if (Directory.Exists(Path.GetDirectoryName(_outputDirDelete)))
+            {
+                Directory.Delete(_outputDirDelete, true);
             }
         }
     }

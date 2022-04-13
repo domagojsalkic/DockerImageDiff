@@ -1,10 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace DockerImageDiff
 {
@@ -15,20 +10,24 @@ namespace DockerImageDiff
             var extension = Path.GetExtension(path);
             var fileName = Path.GetFileName(path);
             var currentPath = Path.GetFullPath(path);
-            currentPath = Directory.GetParent(currentPath).FullName;
+            currentPath = Directory.GetParent(currentPath)?.FullName;
 
             switch (extension.ToLower())
             {
                 case ".gz":
-                    DockerImageDiff.ExtractTarGz.Tar.ExtractTarGz(path, currentPath);
+                    ExtractTarGz.Tar.ExtractTarGz(path, currentPath);
                     break;
                 case ".tar":
-                    DockerImageDiff.ExtractTarGz.Tar.ExtractTar(path, currentPath);
+                     ExtractTarGz.Tar.ExtractTar(path, currentPath);
                     break;
                 default:
                     Debug.Assert(false, "Something went wrong.");
                     break;
             }
+        }
+        public static void DeleteExtractedFiles()
+        {
+            ExtractTarGz.Tar.RemoveExtractedData();
         }
     }
 }
