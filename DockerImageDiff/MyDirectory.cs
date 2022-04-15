@@ -7,7 +7,7 @@ using System.Security.Cryptography;
 
 namespace DockerImageDiff
 {
-    public class MyDirectory
+    public class MyDirectory : IEquatable<MyDirectory>
     {
         public string Name { get; set; }
         public int Position { get; set; }
@@ -60,6 +60,8 @@ namespace DockerImageDiff
 
         public bool Equals(MyDirectory obj)
         {
+            if (obj == null)
+                return false;
             return obj.Name == Name;
         }
 
@@ -147,7 +149,7 @@ namespace DockerImageDiff
             foreach (var file in layer.GetFiles)
             {
                 MyFile tempFile;
-                bool deletedDir = false;
+                var deletedDir = false;
 
                 if (GetDirectories.Any(d => d.Name == file.Name))
                 {

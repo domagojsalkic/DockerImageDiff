@@ -1,8 +1,9 @@
-﻿using System.Security.Cryptography;
+﻿using System;
+using System.Security.Cryptography;
 
 namespace DockerImageDiff
 {
-    public class MyFile
+    public class MyFile : IEquatable<MyFile>
     {
         public MyFile(string name)
         {
@@ -25,13 +26,10 @@ namespace DockerImageDiff
             return Equals(objAsMyDirectory);
         }
 
-        public override int GetHashCode()
-        {
-            return (Name != null ? Name.GetHashCode() : 0);
-        }
-
         public bool Equals(MyFile myFile)
         {
+            if (myFile == null)
+                return false;
             return myFile.Name == Name;
         }
 
