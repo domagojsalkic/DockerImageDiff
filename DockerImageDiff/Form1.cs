@@ -32,7 +32,7 @@ namespace DockerImageDiff
         private readonly List<MyDirectory> _diffLayers = new List<MyDirectory>();
 
         private void selectImage1Button_Click(object sender, EventArgs e)
-        {           
+        {
             fileDialog = new OpenFileDialog();
             fileDialog.Filter = @"TAR (*.tar)|*.tar;|All files (*.*)|*.*";
             fileDialog.ShowDialog();
@@ -90,7 +90,11 @@ namespace DockerImageDiff
             {
                 using (var stream = File.OpenRead(tempFile))
                 {
-                    if (Path.GetFileNameWithoutExtension(tempFile) != "manifest") continue;
+                    if (Path.GetFileNameWithoutExtension(tempFile) != "manifest")
+                    {
+                        continue;
+                    }
+
                     using (var reader = new JsonTextReader(File.OpenText(tempFile)))
                     {
                         var o2 = (JArray)JToken.ReadFrom(reader);
@@ -192,7 +196,7 @@ namespace DockerImageDiff
                     treeNode.SelectedImageIndex = (int)ICON.FILE;
                 }
 
-                
+
                 directoryNode.Nodes.Add(treeNode);
 
             }
@@ -202,7 +206,7 @@ namespace DockerImageDiff
 
         private void DiffLayerTreeView(int index)
         {
-            differenceTreeView.Nodes.Add(CreateTreeNode(_diffLayers[index].GetDirectories.Find(d=>d.Name == "layer")));
+            differenceTreeView.Nodes.Add(CreateTreeNode(_diffLayers[index].GetDirectories.Find(d => d.Name == "layer")));
         }
 
         private void DockerImageCompare_FormClosed(object sender, FormClosedEventArgs e)
