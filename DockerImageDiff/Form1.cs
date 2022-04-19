@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Windows.Forms;
@@ -9,16 +10,16 @@ using Newtonsoft.Json.Linq;
 
 namespace DockerImageDiff
 {
-    public enum ICON
+    public enum Icon
     {
-        FOLDER = 0,
-        FOLDER_ADDED,
-        FOLDER_MODIFIED,
-        FOLDER_DELETED,
-        FILE,
-        FILE_ADDED,
-        FILE_MODIFIED,
-        FILE_DELETED
+        Folder = 0,
+        FolderAdded,
+        FolderModified,
+        FolderDeleted,
+        File,
+        FileAdded,
+        FileModified,
+        FileDeleted
     }
 
     public partial class DockerImageCompare : Form
@@ -49,6 +50,8 @@ namespace DockerImageDiff
 
             DirSearch(Path.Combine(Directory.GetParent(Path.GetFullPath(fileDialog.FileName))?.FullName ?? throw new InvalidOperationException(),
                 Path.GetFileNameWithoutExtension(fileDialog.SafeFileName) ?? throw new InvalidOperationException()));
+
+            ExtractFiles.DeleteExtractedFiles();
 
             _layers = _layers.OrderBy(s => s.Position).ToList();
 
@@ -138,32 +141,35 @@ namespace DockerImageDiff
             ShowTreeView(layerList.SelectedIndex);
         }
 
+
         public static TreeNode CreateTreeNode(MyDirectory dirInfo)
         {
             var directoryNode = new TreeNode(dirInfo.Name);
 
-            if (dirInfo.Deleted)
+            switch (dirInfo.FolderState)
             {
-                directoryNode.ImageIndex = (int)ICON.FOLDER_DELETED;
-                directoryNode.SelectedImageIndex = (int)ICON.FOLDER_DELETED;
-                directoryNode.Expand();
-            }
-            else if (dirInfo.Modified)
-            {
-                directoryNode.ImageIndex = (int)ICON.FOLDER_MODIFIED;
-                directoryNode.SelectedImageIndex = (int)ICON.FOLDER_MODIFIED;
-                directoryNode.Expand();
-            }
-            else if (dirInfo.Added)
-            {
-                directoryNode.ImageIndex = (int)ICON.FOLDER_ADDED;
-                directoryNode.SelectedImageIndex = (int)ICON.FOLDER_ADDED;
-                directoryNode.Expand();
-            }
-            else
-            {
-                directoryNode.ImageIndex = (int)ICON.FOLDER;
-                directoryNode.SelectedImageIndex = (int)ICON.FOLDER;
+                case FolderState.Deleted:
+                    directoryNode.ImageIndex = (int)DockerImageDiff.Icon.FolderDeleted;
+                    directoryNode.SelectedImageIndex = (int)DockerImageDiff.Icon.FolderDeleted;
+                    directoryNode.BackColor = Color.LightPink;
+                    directoryNode.Expand();
+                    break;
+                case FolderState.Modified:
+                    directoryNode.ImageIndex = (int)DockerImageDiff.Icon.FolderModified;
+                    directoryNode.SelectedImageIndex = (int)DockerImageDiff.Icon.FolderModified;
+                    directoryNode.BackColor = Color.LightSkyBlue;
+                    directoryNode.Expand();
+                    break;
+                case FolderState.Added:
+                    directoryNode.ImageIndex = (int)DockerImageDiff.Icon.FolderAdded;
+                    directoryNode.SelectedImageIndex = (int)DockerImageDiff.Icon.FolderAdded;
+                    directoryNode.BackColor = Color.PaleGreen;
+                    directoryNode.Expand();
+                    break;
+                default:
+                    directoryNode.ImageIndex = (int)DockerImageDiff.Icon.Folder;
+                    directoryNode.SelectedImageIndex = (int)DockerImageDiff.Icon.Folder;
+                    break;
             }
 
             foreach (var dir in dirInfo.GetDirectories)
@@ -173,32 +179,32 @@ namespace DockerImageDiff
 
             foreach (var file in dirInfo.GetFiles)
             {
-                var treeNode = new TreeNode(file.Name);
+                var fileNode = new TreeNode(file.Name);
 
-                if (file.Deleted)
+                switch (file.FileState)
                 {
-                    treeNode.ImageIndex = (int)ICON.FILE_DELETED;
-                    treeNode.SelectedImageIndex = (int)ICON.FILE_DELETED;
-                }
-                else if (file.Modified)
-                {
-                    treeNode.ImageIndex = (int)ICON.FILE_MODIFIED;
-                    treeNode.SelectedImageIndex = (int)ICON.FILE_MODIFIED;
-                }
-                else if (file.Added)
-                {
-                    treeNode.ImageIndex = (int)ICON.FILE_ADDED;
-                    treeNode.SelectedImageIndex = (int)ICON.FILE_ADDED;
-                }
-                else
-                {
-                    treeNode.ImageIndex = (int)ICON.FILE;
-                    treeNode.SelectedImageIndex = (int)ICON.FILE;
+                    case FileState.Deleted:
+                        fileNode.ImageIndex = (int)DockerImageDiff.Icon.FileDeleted;
+                        fileNode.SelectedImageIndex = (int)DockerImageDiff.Icon.FileDeleted;
+                        fileNode.BackColor = Color.LightPink;
+                        break;
+                    case FileState.Modified:
+                        fileNode.ImageIndex = (int)DockerImageDiff.Icon.FileModified;
+                        fileNode.SelectedImageIndex = (int)DockerImageDiff.Icon.FileModified;
+                        fileNode.BackColor = Color.LightSkyBlue;
+                        break;
+                    case FileState.Added:
+                        fileNode.ImageIndex = (int)DockerImageDiff.Icon.FileAdded;
+                        fileNode.SelectedImageIndex = (int)DockerImageDiff.Icon.FileAdded;
+                        fileNode.BackColor = Color.PaleGreen;
+                        break;
+                    default:
+                        fileNode.ImageIndex = (int)DockerImageDiff.Icon.File;
+                        fileNode.SelectedImageIndex = (int)DockerImageDiff.Icon.File;
+                        break;
                 }
 
-
-                directoryNode.Nodes.Add(treeNode);
-
+                directoryNode.Nodes.Add(fileNode);
             }
 
             return directoryNode;
@@ -207,11 +213,6 @@ namespace DockerImageDiff
         private void DiffLayerTreeView(int index)
         {
             differenceTreeView.Nodes.Add(CreateTreeNode(_diffLayers[index].GetDirectories.Find(d => d.Name == "layer")));
-        }
-
-        private void DockerImageCompare_FormClosed(object sender, FormClosedEventArgs e)
-        {
-            ExtractFiles.DeleteExtractedFiles();
         }
     }
 }

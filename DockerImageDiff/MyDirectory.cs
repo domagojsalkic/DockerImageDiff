@@ -5,15 +5,21 @@ using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
 
+public enum FolderState
+{
+    None = 0,
+    Added = 1,
+    Modified = 2,
+    Deleted = 3
+}
+
 namespace DockerImageDiff
 {
     public class MyDirectory : IEquatable<MyDirectory>
     {
         public string Name { get; set; }
         public int Position { get; set; }
-        public bool Modified { get; set; }
-        public bool Deleted { get; set; }
-        public bool Added { get; set; }
+        public FolderState FolderState { get; set; }
         public string AbsPath { get; set; }
 
         private List<MyDirectory> _directories = new List<MyDirectory>();
@@ -22,18 +28,14 @@ namespace DockerImageDiff
         public MyDirectory(string name)
         {
             Name = name;
-            Modified = false;
-            Deleted = false;
-            Added = false;
+            FolderState = FolderState.None;
         }
 
         public MyDirectory(MyDirectory directory)
         {
             Name = directory.Name;
             Position = directory.Position;
-            Modified = directory.Modified;
-            Deleted = directory.Deleted;
-            Added = directory.Added;
+            FolderState = directory.FolderState;
             AbsPath = directory.AbsPath;
 
             foreach (var f in directory.GetFiles)
@@ -73,13 +75,15 @@ namespace DockerImageDiff
             {
                 using (var stream = File.OpenRead(tempFile))
                 {
-                    var file = new MyFile(Path.GetFileName(tempFile));
-                    file.AbsPath = Path.GetFullPath(path);
+                    var file = new MyFile(Path.GetFileName(tempFile))
+                    {
+                        AbsPath = Path.GetFullPath(path)
+                    };
                     if (file.Name.Contains(".wh."))
                     {
                         file.Name = file.Name.Replace(".wh.", "");
                         file.AbsPath += "\\" + file.Name;
-                        file.Deleted = true;
+                        file.FileState = FileState.Deleted;
                     }
                     if (file.Name != ".opq")
                         _files.Add(file);
@@ -92,7 +96,7 @@ namespace DockerImageDiff
                 if (subDir.Name.Contains(".wh."))
                 {
                     subDir.Name = subDir.Name.Replace(".wh.", "");
-                    subDir.Deleted = true;
+                    subDir.FolderState = FolderState.Deleted;
                 }
                 _directories.Add(subDir);
                 subDir.Dive(tempDir);
@@ -103,12 +107,13 @@ namespace DockerImageDiff
         {
             foreach (var myFile in GetFiles)
             {
-                myFile.Added = true;
+                myFile.FileState = FileState.Added;
             }
 
             foreach (var myDirectory in GetDirectories)
             {
-                myDirectory.Added = true;
+                myDirectory.FolderState = FolderState.Added;
+                myDirectory.AddedDir();
             }
         }
 
@@ -117,28 +122,25 @@ namespace DockerImageDiff
             foreach (var file in GetFiles)
             {
 
-                if (file.Deleted)
+                if (file.FileState == FileState.Deleted)
                 {
                     GetFiles.Remove(file);
                 }
                 else
                 {
-                    file.Added = false;
-                    file.Modified = false;
+                    file.FileState = FileState.None;
                 }
             }
 
             foreach (var directory in GetDirectories)
             {
-                if (directory.Deleted)
+                if (directory.FolderState == FolderState.Deleted)
                 {
                     GetDirectories.Remove(directory);
                 }
                 else
                 {
-
-                    directory.Added = false;
-                    directory.Modified = false;
+                    directory.FolderState = FolderState.None;
                     directory.CleanPrevDiff();
                 }
             }
@@ -160,23 +162,28 @@ namespace DockerImageDiff
 
                 if (GetFiles.Contains(file))
                 {
-                    if (file.Deleted)
+                    if (file.FileState == FileState.Deleted)
                     {
-                        GetFiles.Find(f => f.Name == file.Name).Deleted = true;
+                        GetFiles.Find(f => f.Name == file.Name).FileState = FileState.Deleted;
                     }
                     else
                     {
                         tempFile = GetFiles.Find(f => f.Name == file.Name);
-                        tempFile.Modified = true;
+                        tempFile.FileState = FileState.Modified;
                     }
                 }
                 else
                 {
-                    if (deletedDir) continue;
+                    if (deletedDir)
+                    {
+                        continue;
+                    }
+
                     tempFile = new MyFile(file.Name)
                     {
-                        Added = true
+                        FileState = FileState.Added
                     };
+
                     GetFiles.Add(tempFile);
                 }
 
@@ -189,14 +196,14 @@ namespace DockerImageDiff
 
                 if (GetDirectories.Contains(directory))
                 {
-                    if (directory.Deleted)
+                    if (directory.FolderState == FolderState.Deleted)
                     {
                         GetDirectories.Find(p => directory.Name == p.Name).Delete();
                     }
                     else
                     {
                         tempDir = GetDirectories.Find(p => directory.Name == p.Name);
-                        tempDir.Modified = true;
+                        tempDir.FolderState = FolderState.Modified;
                         tempDir.DiffDive(directory);
                     }
                 }
@@ -204,7 +211,7 @@ namespace DockerImageDiff
                 {
                     tempDir = new MyDirectory(directory)
                     {
-                        Added = true
+                        FolderState = FolderState.Added
                     };
                     tempDir.AddedDir();
                     GetDirectories.Add(tempDir);
@@ -215,16 +222,16 @@ namespace DockerImageDiff
 
         private void Delete()
         {
-            Deleted = true;
+            FolderState = FolderState.Deleted;
 
             foreach (var file in GetFiles)
             {
-                file.Deleted = true;
+                file.FileState = FileState.Deleted;
             }
 
             foreach (var directory in GetDirectories)
             {
-                directory.Deleted = true;
+                directory.FolderState = FolderState.Deleted;
                 directory.Delete();
             }
         }

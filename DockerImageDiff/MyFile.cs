@@ -1,20 +1,31 @@
 ﻿using System;
+using System.Diagnostics.Tracing;
 using System.Security.Cryptography;
+
+public enum FileState
+{
+    None = 0,
+    Added = 1,
+    Modified = 2,
+    Deleted = 3
+}
 
 namespace DockerImageDiff
 {
     public class MyFile : IEquatable<MyFile>
-    {
+    { public string Name { get; set; }
+        public FileState FileState { get; set; }
+        public string AbsPath { get; set; }
         public MyFile(string name)
         {
             Name = name;
+            FileState = FileState.None;
+            AbsPath = "";
         }  
         public MyFile(MyFile file)
         {
             Name = file.Name;
-            Modified= file.Modified;
-            Deleted = file.Deleted;
-            Added = file.Added;
+            FileState = file.FileState;
             AbsPath = file.AbsPath;
         }
 
@@ -32,11 +43,5 @@ namespace DockerImageDiff
                 return false;
             return myFile.Name == Name;
         }
-
-        public string Name { get; set; }
-        public bool Modified { get; set; }
-        public bool Deleted { get; set; }
-        public bool Added { get; set; }
-        public string AbsPath { get; set; }
     }
 }
