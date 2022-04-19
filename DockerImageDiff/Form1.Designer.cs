@@ -42,20 +42,22 @@ namespace DockerImageDiff
             this.fileImage1TextBox = new System.Windows.Forms.TextBox();
             this.fileDialog = new System.Windows.Forms.OpenFileDialog();
             this.layerList = new System.Windows.Forms.ListBox();
+            this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.layerHistoryBox = new System.Windows.Forms.GroupBox();
+            this.groupBox1.SuspendLayout();
+            this.layerHistoryBox.SuspendLayout();
             this.SuspendLayout();
             // 
             // differenceTreeView
             // 
-            this.differenceTreeView.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
             this.differenceTreeView.Cursor = System.Windows.Forms.Cursors.Default;
+            this.differenceTreeView.Dock = System.Windows.Forms.DockStyle.Fill;
             this.differenceTreeView.ImageIndex = 0;
             this.differenceTreeView.ImageList = this.imageList1;
-            this.differenceTreeView.Location = new System.Drawing.Point(309, 25);
+            this.differenceTreeView.Location = new System.Drawing.Point(3, 22);
             this.differenceTreeView.Name = "differenceTreeView";
             this.differenceTreeView.SelectedImageIndex = 0;
-            this.differenceTreeView.Size = new System.Drawing.Size(838, 633);
+            this.differenceTreeView.Size = new System.Drawing.Size(676, 581);
             this.differenceTreeView.StateImageList = this.imageList1;
             this.differenceTreeView.TabIndex = 0;
             // 
@@ -76,7 +78,7 @@ namespace DockerImageDiff
             // 
             this.selectImage1Button.Location = new System.Drawing.Point(217, 25);
             this.selectImage1Button.Name = "selectImage1Button";
-            this.selectImage1Button.Size = new System.Drawing.Size(75, 23);
+            this.selectImage1Button.Size = new System.Drawing.Size(75, 20);
             this.selectImage1Button.TabIndex = 2;
             this.selectImage1Button.Text = "Select";
             this.selectImage1Button.UseVisualStyleBackColor = true;
@@ -101,7 +103,7 @@ namespace DockerImageDiff
             this.fileImage1TextBox.Location = new System.Drawing.Point(15, 25);
             this.fileImage1TextBox.Name = "fileImage1TextBox";
             this.fileImage1TextBox.ReadOnly = true;
-            this.fileImage1TextBox.Size = new System.Drawing.Size(196, 20);
+            this.fileImage1TextBox.Size = new System.Drawing.Size(195, 20);
             this.fileImage1TextBox.TabIndex = 1;
             // 
             // fileDialog
@@ -110,36 +112,68 @@ namespace DockerImageDiff
             // 
             // layerList
             // 
-            this.layerList.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left)));
             this.layerList.Cursor = System.Windows.Forms.Cursors.Default;
-            this.layerList.Font = new System.Drawing.Font("Consolas", 10F);
+            this.layerList.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.layerList.Font = new System.Drawing.Font("Consolas", 12F);
             this.layerList.FormattingEnabled = true;
             this.layerList.ImeMode = System.Windows.Forms.ImeMode.NoControl;
-            this.layerList.ItemHeight = 15;
-            this.layerList.Location = new System.Drawing.Point(15, 54);
+            this.layerList.IntegralHeight = false;
+            this.layerList.ItemHeight = 19;
+            this.layerList.Location = new System.Drawing.Point(3, 22);
             this.layerList.Name = "layerList";
-            this.layerList.Size = new System.Drawing.Size(280, 604);
+            this.layerList.Size = new System.Drawing.Size(283, 552);
             this.layerList.TabIndex = 6;
             this.layerList.SelectedIndexChanged += new System.EventHandler(this.LayerList_SelectedIndexChanged);
+            // 
+            // groupBox1
+            // 
+            this.groupBox1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left)));
+            this.groupBox1.Controls.Add(this.layerList);
+            this.groupBox1.Font = new System.Drawing.Font("Consolas", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
+            this.groupBox1.Location = new System.Drawing.Point(12, 54);
+            this.groupBox1.Name = "groupBox1";
+            this.groupBox1.Size = new System.Drawing.Size(289, 577);
+            this.groupBox1.TabIndex = 7;
+            this.groupBox1.TabStop = false;
+            this.groupBox1.Text = "Layer list";
+            // 
+            // layerHistoryBox
+            // 
+            this.layerHistoryBox.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.layerHistoryBox.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+            this.layerHistoryBox.BackColor = System.Drawing.SystemColors.Control;
+            this.layerHistoryBox.Controls.Add(this.differenceTreeView);
+            this.layerHistoryBox.Font = new System.Drawing.Font("Consolas", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
+            this.layerHistoryBox.ForeColor = System.Drawing.SystemColors.ControlText;
+            this.layerHistoryBox.Location = new System.Drawing.Point(307, 25);
+            this.layerHistoryBox.Name = "layerHistoryBox";
+            this.layerHistoryBox.Size = new System.Drawing.Size(682, 606);
+            this.layerHistoryBox.TabIndex = 8;
+            this.layerHistoryBox.TabStop = false;
+            this.layerHistoryBox.Text = "Layer history";
             // 
             // DockerImageCompare
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.AutoScroll = true;
-            this.ClientSize = new System.Drawing.Size(1159, 674);
-            this.Controls.Add(this.layerList);
+            this.ClientSize = new System.Drawing.Size(1000, 643);
+            this.Controls.Add(this.layerHistoryBox);
+            this.Controls.Add(this.groupBox1);
             this.Controls.Add(this.fileImage1TextBox);
             this.Controls.Add(this.dockerImageLabel);
             this.Controls.Add(this.selectImage1Button);
-            this.Controls.Add(this.differenceTreeView);
+            this.DoubleBuffered = true;
             this.MaximumSize = new System.Drawing.Size(1920, 1080);
             this.MinimumSize = new System.Drawing.Size(650, 500);
             this.Name = "DockerImageCompare";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Docker Layer History";
-            this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.DockerImageCompare_FormClosed);
+            this.groupBox1.ResumeLayout(false);
+            this.layerHistoryBox.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -158,8 +192,10 @@ namespace DockerImageDiff
         private Label dockerImageLabel;
         private TextBox fileImage1TextBox;
         private OpenFileDialog fileDialog;
-        private ListBox layerList;
         private ImageList imageList1;
+        private GroupBox groupBox1;
+        private GroupBox layerHistoryBox;
+        private ListBox layerList;
     }
 }
 
