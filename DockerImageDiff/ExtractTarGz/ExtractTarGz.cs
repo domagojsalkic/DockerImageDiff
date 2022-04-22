@@ -58,7 +58,7 @@ namespace DockerImageDiff.ExtractTarGz
             if (!Directory.Exists(Path.GetDirectoryName(output)))
                 Directory.CreateDirectory((Path.GetDirectoryName(output)));
             outputDir = output;
-            if(_outputDirDelete == null)
+            if (_outputDirDelete == null)
                 _outputDirDelete = outputDir;
             using (var stream = File.OpenRead(filename))
                 ExtractTar(stream, outputDir);
@@ -99,7 +99,7 @@ namespace DockerImageDiff.ExtractTarGz
                 var output = Path.Combine(outputDir, ToSafeFileName(name));
                 if (!Directory.Exists(Path.GetDirectoryName(output)))
                     Directory.CreateDirectory(Path.GetDirectoryName(output));
-                if(_outputDirDelete == null)
+                if (_outputDirDelete == null)
                     _outputDirDelete = outputDir;
                 if (!name.EndsWith("/"))
                 {

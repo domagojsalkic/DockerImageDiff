@@ -183,7 +183,7 @@ namespace DockerImageDiff
 
         public void UpdateName(string name)
         {
-            Text = "Docker Image Compare";
+            Text = "Docker Layer History";
             Text += (" (" + name + ")");
         }
 

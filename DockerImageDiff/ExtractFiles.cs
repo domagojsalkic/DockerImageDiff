@@ -18,7 +18,7 @@ namespace DockerImageDiff
                     ExtractTarGz.Tar.ExtractTarGz(path, currentPath);
                     break;
                 case ".tar":
-                     ExtractTarGz.Tar.ExtractTar(path, currentPath);
+                    ExtractTarGz.Tar.ExtractTar(path, currentPath);
                     break;
                 default:
                     Debug.Assert(false, "Something went wrong.");

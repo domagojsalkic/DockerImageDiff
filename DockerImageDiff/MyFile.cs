@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Diagnostics.Tracing;
-using System.Security.Cryptography;
 
 public enum FileState
 {
@@ -13,7 +11,8 @@ public enum FileState
 namespace DockerImageDiff
 {
     public class MyFile : IEquatable<MyFile>
-    { public string Name { get; set; }
+    {
+        public string Name { get; set; }
         public FileState FileState { get; set; }
         public string AbsPath { get; set; }
         public MyFile(string name)
@@ -21,7 +20,7 @@ namespace DockerImageDiff
             Name = name;
             FileState = FileState.None;
             AbsPath = "";
-        }  
+        }
         public MyFile(MyFile file)
         {
             Name = file.Name;
