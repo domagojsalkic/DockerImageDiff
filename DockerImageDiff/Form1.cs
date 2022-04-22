@@ -1,12 +1,12 @@
-﻿using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Windows.Forms;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace DockerImageDiff
 {
@@ -24,13 +24,14 @@ namespace DockerImageDiff
 
     public partial class DockerImageCompare : Form
     {
+        private readonly List<MyDirectory> _diffLayers = new List<MyDirectory>();
+
+        private List<MyDirectory> _layers = new List<MyDirectory>();
+
         public DockerImageCompare()
         {
             InitializeComponent();
         }
-
-        private List<MyDirectory> _layers = new List<MyDirectory>();
-        private readonly List<MyDirectory> _diffLayers = new List<MyDirectory>();
 
         private void selectImage1Button_Click(object sender, EventArgs e)
         {
@@ -48,7 +49,9 @@ namespace DockerImageDiff
 
             ExtractFiles.ExtractFile(fileDialog.FileName);
 
-            DirSearch(Path.Combine(Directory.GetParent(Path.GetFullPath(fileDialog.FileName))?.FullName ?? throw new InvalidOperationException(),
+            DirSearch(Path.Combine(
+                Directory.GetParent(Path.GetFullPath(fileDialog.FileName))?.FullName ??
+                throw new InvalidOperationException(),
                 Path.GetFileNameWithoutExtension(fileDialog.SafeFileName) ?? throw new InvalidOperationException()));
 
             ExtractFiles.DeleteExtractedFiles();
@@ -77,10 +80,7 @@ namespace DockerImageDiff
 
             layerList.Items.Clear();
 
-            foreach (var item in _layers.ToArray())
-            {
-                layerList.Items.Add(item.Name.Substring(0, 30));
-            }
+            foreach (var item in _layers.ToArray()) layerList.Items.Add(item.Name.Substring(0, 30));
 
             ShowTreeView(_diffLayers.First().Position);
         }
@@ -90,13 +90,9 @@ namespace DockerImageDiff
             var positions = new Dictionary<int, string>();
 
             foreach (var tempFile in Directory.GetFiles(path))
-            {
                 using (var stream = File.OpenRead(tempFile))
                 {
-                    if (Path.GetFileNameWithoutExtension(tempFile) != "manifest")
-                    {
-                        continue;
-                    }
+                    if (Path.GetFileNameWithoutExtension(tempFile) != "manifest") continue;
 
                     using (var reader = new JsonTextReader(File.OpenText(tempFile)))
                     {
@@ -111,19 +107,15 @@ namespace DockerImageDiff
                         }
                     }
                 }
-            }
 
             foreach (var dir in Directory.GetDirectories(path))
             {
                 var layer = new MyDirectory(Path.GetFileName(dir));
                 if (positions.ContainsValue(layer.Name))
-                {
                     layer.Position = positions.FirstOrDefault(s => s.Value == layer.Name).Key;
-                }
 
                 layer.Dive(dir);
                 _layers.Add(layer);
-
             }
         }
 
@@ -172,10 +164,7 @@ namespace DockerImageDiff
                     break;
             }
 
-            foreach (var dir in dirInfo.GetDirectories)
-            {
-                directoryNode.Nodes.Add(CreateTreeNode(dir));
-            }
+            foreach (var dir in dirInfo.GetDirectories) directoryNode.Nodes.Add(CreateTreeNode(dir));
 
             foreach (var file in dirInfo.GetFiles)
             {
@@ -212,7 +201,8 @@ namespace DockerImageDiff
 
         private void DiffLayerTreeView(int index)
         {
-            differenceTreeView.Nodes.Add(CreateTreeNode(_diffLayers[index].GetDirectories.Find(d => d.Name == "layer")));
+            differenceTreeView.Nodes.Add(CreateTreeNode(_diffLayers[index].GetDirectories
+                .Find(d => d.Name == "layer")));
         }
     }
 }

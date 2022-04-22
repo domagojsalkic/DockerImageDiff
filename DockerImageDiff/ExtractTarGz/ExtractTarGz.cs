@@ -5,23 +5,25 @@ using System.Text;
 
 namespace DockerImageDiff.ExtractTarGz
 {
-
     public class Tar
     {
         private static string _outputDirDelete;
+
         /// <summary>
-        /// Extracts a <i>.tar.gz</i> archive to the specified directory.
+        ///     Extracts a <i>.tar.gz</i> archive to the specified directory.
         /// </summary>
         /// <param name="filename">The <i>.tar.gz</i> to decompress and extract.</param>
         /// <param name="outputDir">Output directory to write the files.</param>
         public static void ExtractTarGz(string filename, string outputDir)
         {
             using (var stream = File.OpenRead(filename))
+            {
                 ExtractTarGz(stream, outputDir);
+            }
         }
 
         /// <summary>
-        /// Extracts a <i>.tar.gz</i> archive stream to the specified directory.
+        ///     Extracts a <i>.tar.gz</i> archive stream to the specified directory.
         /// </summary>
         /// <param name="stream">The <i>.tar.gz</i> to decompress and extract.</param>
         /// <param name="outputDir">Output directory to write the files.</param>
@@ -48,7 +50,7 @@ namespace DockerImageDiff.ExtractTarGz
         }
 
         /// <summary>
-        /// Extractes a <c>tar</c> archive to the specified directory.
+        ///     Extractes a <c>tar</c> archive to the specified directory.
         /// </summary>
         /// <param name="filename">The <i>.tar</i> to extract.</param>
         /// <param name="outputDir">Output directory to write the files.</param>
@@ -56,12 +58,14 @@ namespace DockerImageDiff.ExtractTarGz
         {
             var output = Path.Combine(outputDir, Path.GetFileNameWithoutExtension(filename));
             if (!Directory.Exists(Path.GetDirectoryName(output)))
-                Directory.CreateDirectory((Path.GetDirectoryName(output)));
+                Directory.CreateDirectory(Path.GetDirectoryName(output));
             outputDir = output;
             if (_outputDirDelete == null)
                 _outputDirDelete = outputDir;
             using (var stream = File.OpenRead(filename))
+            {
                 ExtractTar(stream, outputDir);
+            }
         }
 
 
@@ -76,7 +80,7 @@ namespace DockerImageDiff.ExtractTarGz
         }
 
         /// <summary>
-        /// Extractes a <c>tar</c> archive to the specified directory.
+        ///     Extractes a <c>tar</c> archive to the specified directory.
         /// </summary>
         /// <param name="stream">The <i>.tar</i> to extract.</param>
         /// <param name="outputDir">Output directory to write the files.</param>
@@ -102,14 +106,12 @@ namespace DockerImageDiff.ExtractTarGz
                 if (_outputDirDelete == null)
                     _outputDirDelete = outputDir;
                 if (!name.EndsWith("/"))
-                {
                     using (var str = File.Open(output, FileMode.OpenOrCreate, FileAccess.Write))
                     {
                         var buf = new byte[size];
                         stream.Read(buf, 0, buf.Length);
                         str.Write(buf, 0, buf.Length);
                     }
-                }
 
                 // Recursion for extracting tar from each layer 
                 if (name.EndsWith(".tar"))
@@ -120,7 +122,7 @@ namespace DockerImageDiff.ExtractTarGz
 
                 var pos = stream.Position;
 
-                var offset = 512 - (pos % 512);
+                var offset = 512 - pos % 512;
                 if (offset == 512)
                     offset = 0;
 
@@ -130,10 +132,7 @@ namespace DockerImageDiff.ExtractTarGz
 
         public static void RemoveExtractedData()
         {
-            if (Directory.Exists(Path.GetDirectoryName(_outputDirDelete)))
-            {
-                Directory.Delete(_outputDirDelete, true);
-            }
+            if (Directory.Exists(Path.GetDirectoryName(_outputDirDelete))) Directory.Delete(_outputDirDelete, true);
         }
     }
 }

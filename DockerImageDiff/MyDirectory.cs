@@ -15,11 +15,6 @@ namespace DockerImageDiff
 {
     public class MyDirectory : IEquatable<MyDirectory>
     {
-        public string Name { get; set; }
-        public int Position { get; set; }
-        public FolderState FolderState { get; set; }
-        public string AbsPath { get; set; }
-
         private List<MyDirectory> _directories = new List<MyDirectory>();
         private List<MyFile> _files = new List<MyFile>();
 
@@ -36,19 +31,25 @@ namespace DockerImageDiff
             FolderState = directory.FolderState;
             AbsPath = directory.AbsPath;
 
-            foreach (var f in directory.GetFiles)
-            {
-                _files.Add(new MyFile(f));
-            }
+            foreach (var f in directory.GetFiles) _files.Add(new MyFile(f));
 
-            foreach (var dir in directory.GetDirectories)
-            {
-                _directories.Add(new MyDirectory(dir));
-            }
+            foreach (var dir in directory.GetDirectories) _directories.Add(new MyDirectory(dir));
         }
+
+        public string Name { get; set; }
+        public int Position { get; set; }
+        public FolderState FolderState { get; set; }
+        public string AbsPath { get; set; }
 
         public ref List<MyDirectory> GetDirectories => ref _directories;
         public ref List<MyFile> GetFiles => ref _files;
+
+        public bool Equals(MyDirectory obj)
+        {
+            if (obj == null)
+                return false;
+            return obj.Name == Name;
+        }
 
         public override bool Equals(object obj)
         {
@@ -58,19 +59,11 @@ namespace DockerImageDiff
             return Equals(objAsMyDirectory);
         }
 
-        public bool Equals(MyDirectory obj)
-        {
-            if (obj == null)
-                return false;
-            return obj.Name == Name;
-        }
-
         public void Dive(string path)
         {
             AbsPath = Path.GetFullPath(path);
 
             foreach (var tempFile in Directory.GetFiles(path))
-            {
                 using (var stream = File.OpenRead(tempFile))
                 {
                     var file = new MyFile(Path.GetFileName(tempFile))
@@ -83,10 +76,10 @@ namespace DockerImageDiff
                         file.AbsPath += "\\" + file.Name;
                         file.FileState = FileState.Deleted;
                     }
+
                     if (file.Name != ".opq")
                         _files.Add(file);
                 }
-            }
 
             foreach (var tempDir in Directory.GetDirectories(path))
             {
@@ -96,6 +89,7 @@ namespace DockerImageDiff
                     subDir.Name = subDir.Name.Replace(".wh.", "");
                     subDir.FolderState = FolderState.Deleted;
                 }
+
                 _directories.Add(subDir);
                 subDir.Dive(tempDir);
             }
@@ -103,10 +97,7 @@ namespace DockerImageDiff
 
         private void AddedDir()
         {
-            foreach (var myFile in GetFiles)
-            {
-                myFile.FileState = FileState.Added;
-            }
+            foreach (var myFile in GetFiles) myFile.FileState = FileState.Added;
 
             foreach (var myDirectory in GetDirectories)
             {
@@ -118,20 +109,12 @@ namespace DockerImageDiff
         public void CleanPrevDiff()
         {
             foreach (var file in GetFiles)
-            {
-
                 if (file.FileState == FileState.Deleted)
-                {
                     GetFiles.Remove(file);
-                }
                 else
-                {
                     file.FileState = FileState.None;
-                }
-            }
 
             foreach (var directory in GetDirectories)
-            {
                 if (directory.FolderState == FolderState.Deleted)
                 {
                     GetDirectories.Remove(directory);
@@ -141,7 +124,6 @@ namespace DockerImageDiff
                     directory.FolderState = FolderState.None;
                     directory.CleanPrevDiff();
                 }
-            }
         }
 
         public void DiffDive(MyDirectory layer)
@@ -172,10 +154,7 @@ namespace DockerImageDiff
                 }
                 else
                 {
-                    if (deletedDir)
-                    {
-                        continue;
-                    }
+                    if (deletedDir) continue;
 
                     tempFile = new MyFile(file.Name)
                     {
@@ -184,8 +163,8 @@ namespace DockerImageDiff
 
                     GetFiles.Add(tempFile);
                 }
-
             }
+
             GetFiles = GetFiles.OrderBy(q => q.Name).ToList();
 
             foreach (var directory in layer.GetDirectories)
@@ -215,6 +194,7 @@ namespace DockerImageDiff
                     GetDirectories.Add(tempDir);
                 }
             }
+
             GetDirectories = GetDirectories.OrderBy(q => q.Name).ToList();
         }
 
@@ -222,10 +202,7 @@ namespace DockerImageDiff
         {
             FolderState = FolderState.Deleted;
 
-            foreach (var file in GetFiles)
-            {
-                file.FileState = FileState.Deleted;
-            }
+            foreach (var file in GetFiles) file.FileState = FileState.Deleted;
 
             foreach (var directory in GetDirectories)
             {
@@ -234,5 +211,4 @@ namespace DockerImageDiff
             }
         }
     }
-
 }

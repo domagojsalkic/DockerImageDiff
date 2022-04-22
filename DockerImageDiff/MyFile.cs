@@ -12,20 +12,29 @@ namespace DockerImageDiff
 {
     public class MyFile : IEquatable<MyFile>
     {
-        public string Name { get; set; }
-        public FileState FileState { get; set; }
-        public string AbsPath { get; set; }
         public MyFile(string name)
         {
             Name = name;
             FileState = FileState.None;
             AbsPath = "";
         }
+
         public MyFile(MyFile file)
         {
             Name = file.Name;
             FileState = file.FileState;
             AbsPath = file.AbsPath;
+        }
+
+        public string Name { get; set; }
+        public FileState FileState { get; set; }
+        public string AbsPath { get; set; }
+
+        public bool Equals(MyFile myFile)
+        {
+            if (myFile == null)
+                return false;
+            return myFile.Name == Name;
         }
 
         public override bool Equals(object obj)
@@ -34,13 +43,6 @@ namespace DockerImageDiff
                 return false;
 
             return Equals(objAsMyDirectory);
-        }
-
-        public bool Equals(MyFile myFile)
-        {
-            if (myFile == null)
-                return false;
-            return myFile.Name == Name;
         }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics;
 using System.IO;
+using DockerImageDiff.ExtractTarGz;
 
 namespace DockerImageDiff
 {
@@ -15,19 +16,20 @@ namespace DockerImageDiff
             switch (extension.ToLower())
             {
                 case ".gz":
-                    ExtractTarGz.Tar.ExtractTarGz(path, currentPath);
+                    Tar.ExtractTarGz(path, currentPath);
                     break;
                 case ".tar":
-                    ExtractTarGz.Tar.ExtractTar(path, currentPath);
+                    Tar.ExtractTar(path, currentPath);
                     break;
                 default:
                     Debug.Assert(false, "Something went wrong.");
                     break;
             }
         }
+
         public static void DeleteExtractedFiles()
         {
-            ExtractTarGz.Tar.RemoveExtractedData();
+            Tar.RemoveExtractedData();
         }
     }
 }
