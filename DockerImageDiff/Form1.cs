@@ -24,9 +24,9 @@ namespace DockerImageDiff
 
     public partial class DockerImageCompare : Form
     {
-        private readonly List<MyDirectory> _diffLayers = new List<MyDirectory>();
+        private readonly List<CustomDirectory> _diffLayers = new List<CustomDirectory>();
 
-        private List<MyDirectory> _layers = new List<MyDirectory>();
+        private List<CustomDirectory> _layers = new List<CustomDirectory>();
 
         public DockerImageCompare()
         {
@@ -60,15 +60,15 @@ namespace DockerImageDiff
 
             foreach (var layer in _layers)
             {
-                MyDirectory diffLayer;
+                CustomDirectory diffLayer;
                 if (_diffLayers.Count == 0)
                 {
-                    diffLayer = new MyDirectory(layer);
+                    diffLayer = new CustomDirectory(layer);
                     _diffLayers.Add(diffLayer);
                 }
                 else
                 {
-                    diffLayer = new MyDirectory(_diffLayers.Last())
+                    diffLayer = new CustomDirectory(_diffLayers.Last())
                     {
                         Name = layer.Name
                     };
@@ -110,7 +110,7 @@ namespace DockerImageDiff
 
             foreach (var dir in Directory.GetDirectories(path))
             {
-                var layer = new MyDirectory(Path.GetFileName(dir));
+                var layer = new CustomDirectory(Path.GetFileName(dir));
                 if (positions.ContainsValue(layer.Name))
                     layer.Position = positions.FirstOrDefault(s => s.Value == layer.Name).Key;
 
@@ -134,7 +134,7 @@ namespace DockerImageDiff
         }
 
 
-        public static TreeNode CreateTreeNode(MyDirectory dirInfo)
+        public static TreeNode CreateTreeNode(CustomDirectory dirInfo)
         {
             var directoryNode = new TreeNode(dirInfo.Name);
 

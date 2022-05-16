@@ -13,27 +13,27 @@ public enum FolderState
 
 namespace DockerImageDiff
 {
-    public class MyDirectory : IEquatable<MyDirectory>
+    public class CustomDirectory : IEquatable<CustomDirectory>
     {
-        private List<MyDirectory> _directories = new List<MyDirectory>();
-        private List<MyFile> _files = new List<MyFile>();
+        private List<CustomDirectory> _directories = new List<CustomDirectory>();
+        private List<CustomFile> _files = new List<CustomFile>();
 
-        public MyDirectory(string name)
+        public CustomDirectory(string name)
         {
             Name = name;
             FolderState = FolderState.None;
         }
 
-        public MyDirectory(MyDirectory directory)
+        public CustomDirectory(CustomDirectory directory)
         {
             Name = directory.Name;
             Position = directory.Position;
             FolderState = directory.FolderState;
             AbsPath = directory.AbsPath;
 
-            foreach (var f in directory.GetFiles) _files.Add(new MyFile(f));
+            foreach (var f in directory.GetFiles) _files.Add(new CustomFile(f));
 
-            foreach (var dir in directory.GetDirectories) _directories.Add(new MyDirectory(dir));
+            foreach (var dir in directory.GetDirectories) _directories.Add(new CustomDirectory(dir));
         }
 
         public string Name { get; set; }
@@ -41,10 +41,10 @@ namespace DockerImageDiff
         public FolderState FolderState { get; set; }
         public string AbsPath { get; set; }
 
-        public ref List<MyDirectory> GetDirectories => ref _directories;
-        public ref List<MyFile> GetFiles => ref _files;
+        public ref List<CustomDirectory> GetDirectories => ref _directories;
+        public ref List<CustomFile> GetFiles => ref _files;
 
-        public bool Equals(MyDirectory obj)
+        public bool Equals(CustomDirectory obj)
         {
             if (obj == null)
                 return false;
@@ -53,10 +53,10 @@ namespace DockerImageDiff
 
         public override bool Equals(object obj)
         {
-            if (!(obj is MyDirectory objAsMyDirectory))
+            if (!(obj is CustomDirectory objAsCustomDirectory))
                 return false;
 
-            return Equals(objAsMyDirectory);
+            return Equals(objAsCustomDirectory);
         }
 
         public void Dive(string path)
@@ -66,7 +66,7 @@ namespace DockerImageDiff
             foreach (var tempFile in Directory.GetFiles(path))
                 using (var stream = File.OpenRead(tempFile))
                 {
-                    var file = new MyFile(Path.GetFileName(tempFile))
+                    var file = new CustomFile(Path.GetFileName(tempFile))
                     {
                         AbsPath = Path.GetFullPath(path)
                     };
@@ -83,7 +83,7 @@ namespace DockerImageDiff
 
             foreach (var tempDir in Directory.GetDirectories(path))
             {
-                var subDir = new MyDirectory(Path.GetFileName(tempDir));
+                var subDir = new CustomDirectory(Path.GetFileName(tempDir));
                 if (subDir.Name.Contains(".wh."))
                 {
                     subDir.Name = subDir.Name.Replace(".wh.", "");
@@ -126,11 +126,11 @@ namespace DockerImageDiff
                 }
         }
 
-        public void DiffDive(MyDirectory layer)
+        public void DiffDive(CustomDirectory layer)
         {
             foreach (var file in layer.GetFiles)
             {
-                MyFile tempFile;
+                CustomFile tempFile;
                 var deletedDir = false;
 
                 if (GetDirectories.Any(d => d.Name == file.Name))
@@ -156,7 +156,7 @@ namespace DockerImageDiff
                 {
                     if (deletedDir) continue;
 
-                    tempFile = new MyFile(file.Name)
+                    tempFile = new CustomFile(file.Name)
                     {
                         FileState = FileState.Added
                     };
@@ -169,7 +169,7 @@ namespace DockerImageDiff
 
             foreach (var directory in layer.GetDirectories)
             {
-                MyDirectory tempDir;
+                CustomDirectory tempDir;
 
                 if (GetDirectories.Contains(directory))
                 {
@@ -186,7 +186,7 @@ namespace DockerImageDiff
                 }
                 else
                 {
-                    tempDir = new MyDirectory(directory)
+                    tempDir = new CustomDirectory(directory)
                     {
                         FolderState = FolderState.Added
                     };

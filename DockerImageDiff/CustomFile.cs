@@ -10,16 +10,16 @@ public enum FileState
 
 namespace DockerImageDiff
 {
-    public class MyFile : IEquatable<MyFile>
+    public class CustomFile : IEquatable<CustomFile>
     {
-        public MyFile(string name)
+        public CustomFile(string name)
         {
             Name = name;
             FileState = FileState.None;
             AbsPath = "";
         }
 
-        public MyFile(MyFile file)
+        public CustomFile(CustomFile file)
         {
             Name = file.Name;
             FileState = file.FileState;
@@ -30,19 +30,19 @@ namespace DockerImageDiff
         public FileState FileState { get; set; }
         public string AbsPath { get; set; }
 
-        public bool Equals(MyFile myFile)
+        public bool Equals(CustomFile customFile)
         {
-            if (myFile == null)
+            if (customFile == null)
                 return false;
-            return myFile.Name == Name;
+            return customFile.Name == Name;
         }
 
         public override bool Equals(object obj)
         {
-            if (!(obj is MyFile objAsMyDirectory))
+            if (!(obj is CustomFile objAsCustomFile))
                 return false;
 
-            return Equals(objAsMyDirectory);
+            return Equals(objAsCustomFile);
         }
     }
 }
