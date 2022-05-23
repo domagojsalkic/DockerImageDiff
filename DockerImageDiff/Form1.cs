@@ -24,9 +24,9 @@ namespace DockerImageDiff
 
     public partial class DockerImageCompare : Form
     {
-        private readonly List<CustomDirectory> _diffLayers = new List<CustomDirectory>();
+        private readonly List<Directory> _diffLayers = new List<Directory>();
 
-        private List<CustomDirectory> _layers = new List<CustomDirectory>();
+        private List<Directory> _layers = new List<Directory>();
 
         public DockerImageCompare()
         {
@@ -50,7 +50,7 @@ namespace DockerImageDiff
             ExtractFiles.ExtractFile(fileDialog.FileName);
 
             DirSearch(Path.Combine(
-                Directory.GetParent(Path.GetFullPath(fileDialog.FileName))?.FullName ??
+                System.IO.Directory.GetParent(Path.GetFullPath(fileDialog.FileName))?.FullName ??
                 throw new InvalidOperationException(),
                 Path.GetFileNameWithoutExtension(fileDialog.SafeFileName) ?? throw new InvalidOperationException()));
 
@@ -60,15 +60,15 @@ namespace DockerImageDiff
 
             foreach (var layer in _layers)
             {
-                CustomDirectory diffLayer;
+                Directory diffLayer;
                 if (_diffLayers.Count == 0)
                 {
-                    diffLayer = new CustomDirectory(layer);
+                    diffLayer = new Directory(layer);
                     _diffLayers.Add(diffLayer);
                 }
                 else
                 {
-                    diffLayer = new CustomDirectory(_diffLayers.Last())
+                    diffLayer = new Directory(_diffLayers.Last())
                     {
                         Name = layer.Name
                     };
@@ -89,12 +89,12 @@ namespace DockerImageDiff
         {
             var positions = new Dictionary<int, string>();
 
-            foreach (var tempFile in Directory.GetFiles(path))
-                using (var stream = File.OpenRead(tempFile))
+            foreach (var tempFile in System.IO.Directory.GetFiles(path))
+                using (var stream = System.IO.File.OpenRead(tempFile))
                 {
                     if (Path.GetFileNameWithoutExtension(tempFile) != "manifest") continue;
 
-                    using (var reader = new JsonTextReader(File.OpenText(tempFile)))
+                    using (var reader = new JsonTextReader(System.IO.File.OpenText(tempFile)))
                     {
                         var o2 = (JArray)JToken.ReadFrom(reader);
                         var i = 0;
@@ -108,9 +108,9 @@ namespace DockerImageDiff
                     }
                 }
 
-            foreach (var dir in Directory.GetDirectories(path))
+            foreach (var dir in System.IO.Directory.GetDirectories(path))
             {
-                var layer = new CustomDirectory(Path.GetFileName(dir));
+                var layer = new Directory(Path.GetFileName(dir));
                 if (positions.ContainsValue(layer.Name))
                     layer.Position = positions.FirstOrDefault(s => s.Value == layer.Name).Key;
 
@@ -134,7 +134,7 @@ namespace DockerImageDiff
         }
 
 
-        public static TreeNode CreateTreeNode(CustomDirectory dirInfo)
+        public static TreeNode CreateTreeNode(Directory dirInfo)
         {
             var directoryNode = new TreeNode(dirInfo.Name);
 

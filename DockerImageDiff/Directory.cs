@@ -13,27 +13,27 @@ public enum FolderState
 
 namespace DockerImageDiff
 {
-    public class CustomDirectory : IEquatable<CustomDirectory>
+    public class Directory : IEquatable<Directory>
     {
-        private List<CustomDirectory> _directories = new List<CustomDirectory>();
-        private List<CustomFile> _files = new List<CustomFile>();
+        private List<Directory> _directories = new List<Directory>();
+        private List<File> _files = new List<File>();
 
-        public CustomDirectory(string name)
+        public Directory(string name)
         {
             Name = name;
             FolderState = FolderState.None;
         }
 
-        public CustomDirectory(CustomDirectory directory)
+        public Directory(Directory directory)
         {
             Name = directory.Name;
             Position = directory.Position;
             FolderState = directory.FolderState;
             AbsPath = directory.AbsPath;
 
-            foreach (var f in directory.GetFiles) _files.Add(new CustomFile(f));
+            foreach (var f in directory.GetFiles) _files.Add(new File(f));
 
-            foreach (var dir in directory.GetDirectories) _directories.Add(new CustomDirectory(dir));
+            foreach (var dir in directory.GetDirectories) _directories.Add(new Directory(dir));
         }
 
         public string Name { get; set; }
@@ -41,10 +41,10 @@ namespace DockerImageDiff
         public FolderState FolderState { get; set; }
         public string AbsPath { get; set; }
 
-        public ref List<CustomDirectory> GetDirectories => ref _directories;
-        public ref List<CustomFile> GetFiles => ref _files;
+        public ref List<Directory> GetDirectories => ref _directories;
+        public ref List<File> GetFiles => ref _files;
 
-        public bool Equals(CustomDirectory obj)
+        public bool Equals(Directory obj)
         {
             if (obj == null)
                 return false;
@@ -53,7 +53,7 @@ namespace DockerImageDiff
 
         public override bool Equals(object obj)
         {
-            if (!(obj is CustomDirectory objAsCustomDirectory))
+            if (!(obj is Directory objAsCustomDirectory))
                 return false;
 
             return Equals(objAsCustomDirectory);
@@ -63,10 +63,10 @@ namespace DockerImageDiff
         {
             AbsPath = Path.GetFullPath(path);
 
-            foreach (var tempFile in Directory.GetFiles(path))
-                using (var stream = File.OpenRead(tempFile))
+            foreach (var tempFile in System.IO.Directory.GetFiles(path))
+                using (var stream = System.IO.File.OpenRead(tempFile))
                 {
-                    var file = new CustomFile(Path.GetFileName(tempFile))
+                    var file = new File(Path.GetFileName(tempFile))
                     {
                         AbsPath = Path.GetFullPath(path)
                     };
@@ -81,9 +81,9 @@ namespace DockerImageDiff
                         _files.Add(file);
                 }
 
-            foreach (var tempDir in Directory.GetDirectories(path))
+            foreach (var tempDir in System.IO.Directory.GetDirectories(path))
             {
-                var subDir = new CustomDirectory(Path.GetFileName(tempDir));
+                var subDir = new Directory(Path.GetFileName(tempDir));
                 if (subDir.Name.Contains(".wh."))
                 {
                     subDir.Name = subDir.Name.Replace(".wh.", "");
@@ -126,11 +126,11 @@ namespace DockerImageDiff
                 }
         }
 
-        public void DiffDive(CustomDirectory layer)
+        public void DiffDive(Directory layer)
         {
             foreach (var file in layer.GetFiles)
             {
-                CustomFile tempFile;
+                File tempFile;
                 var deletedDir = false;
 
                 if (GetDirectories.Any(d => d.Name == file.Name))
@@ -156,7 +156,7 @@ namespace DockerImageDiff
                 {
                     if (deletedDir) continue;
 
-                    tempFile = new CustomFile(file.Name)
+                    tempFile = new File(file.Name)
                     {
                         FileState = FileState.Added
                     };
@@ -169,7 +169,7 @@ namespace DockerImageDiff
 
             foreach (var directory in layer.GetDirectories)
             {
-                CustomDirectory tempDir;
+                Directory tempDir;
 
                 if (GetDirectories.Contains(directory))
                 {
@@ -186,7 +186,7 @@ namespace DockerImageDiff
                 }
                 else
                 {
-                    tempDir = new CustomDirectory(directory)
+                    tempDir = new Directory(directory)
                     {
                         FolderState = FolderState.Added
                     };

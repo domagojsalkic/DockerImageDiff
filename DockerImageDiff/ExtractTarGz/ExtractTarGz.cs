@@ -16,7 +16,7 @@ namespace DockerImageDiff.ExtractTarGz
         /// <param name="outputDir">Output directory to write the files.</param>
         public static void ExtractTarGz(string filename, string outputDir)
         {
-            using (var stream = File.OpenRead(filename))
+            using (var stream = System.IO.File.OpenRead(filename))
             {
                 ExtractTarGz(stream, outputDir);
             }
@@ -57,12 +57,12 @@ namespace DockerImageDiff.ExtractTarGz
         public static void ExtractTar(string filename, string outputDir)
         {
             var output = Path.Combine(outputDir, Path.GetFileNameWithoutExtension(filename));
-            if (!Directory.Exists(Path.GetDirectoryName(output)))
-                Directory.CreateDirectory(Path.GetDirectoryName(output));
+            if (!System.IO.Directory.Exists(Path.GetDirectoryName(output)))
+                System.IO.Directory.CreateDirectory(Path.GetDirectoryName(output));
             outputDir = output;
             if (_outputDirDelete == null)
                 _outputDirDelete = outputDir;
-            using (var stream = File.OpenRead(filename))
+            using (var stream = System.IO.File.OpenRead(filename))
             {
                 ExtractTar(stream, outputDir);
             }
@@ -101,12 +101,12 @@ namespace DockerImageDiff.ExtractTarGz
                 stream.Seek(376L, SeekOrigin.Current);
 
                 var output = Path.Combine(outputDir, ToSafeFileName(name));
-                if (!Directory.Exists(Path.GetDirectoryName(output)))
-                    Directory.CreateDirectory(Path.GetDirectoryName(output));
+                if (!System.IO.Directory.Exists(Path.GetDirectoryName(output)))
+                    System.IO.Directory.CreateDirectory(Path.GetDirectoryName(output));
                 if (_outputDirDelete == null)
                     _outputDirDelete = outputDir;
                 if (!name.EndsWith("/"))
-                    using (var str = File.Open(output, FileMode.OpenOrCreate, FileAccess.Write))
+                    using (var str = System.IO.File.Open(output, FileMode.OpenOrCreate, FileAccess.Write))
                     {
                         var buf = new byte[size];
                         stream.Read(buf, 0, buf.Length);
@@ -117,7 +117,7 @@ namespace DockerImageDiff.ExtractTarGz
                 if (name.EndsWith(".tar"))
                 {
                     ExtractTar(Path.GetFullPath(output), Path.Combine(outputDir, Path.GetDirectoryName(name)));
-                    File.Delete(Path.GetFullPath(output));
+                    System.IO.File.Delete(Path.GetFullPath(output));
                 }
 
                 var pos = stream.Position;
@@ -132,7 +132,7 @@ namespace DockerImageDiff.ExtractTarGz
 
         public static void RemoveExtractedData()
         {
-            if (Directory.Exists(Path.GetDirectoryName(_outputDirDelete))) Directory.Delete(_outputDirDelete, true);
+            if (System.IO.Directory.Exists(Path.GetDirectoryName(_outputDirDelete))) System.IO.Directory.Delete(_outputDirDelete, true);
         }
     }
 }

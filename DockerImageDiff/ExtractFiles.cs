@@ -11,7 +11,7 @@ namespace DockerImageDiff
             var extension = Path.GetExtension(path);
             var fileName = Path.GetFileName(path);
             var currentPath = Path.GetFullPath(path);
-            currentPath = Directory.GetParent(currentPath)?.FullName;
+            currentPath = System.IO.Directory.GetParent(currentPath)?.FullName;
 
             switch (extension.ToLower())
             {
